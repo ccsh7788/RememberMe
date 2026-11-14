@@ -1,0 +1,516 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RememberMe · Letting Go</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11100e;color:#f6eddf;font:16px system-ui}button{cursor:pointer;border:1px solid #c3ac87;background:#29251ff0;color:#fff4e0;border-radius:30px;padding:12px 24px;font:inherit}button:disabled{opacity:.4;cursor:default}button:hover:enabled{background:#67543d}#stage{position:fixed;inset:0;background-position:center;background-size:cover;overflow:hidden}#film{width:100%;height:100%;object-fit:cover;background:#000}#film::-webkit-media-controls{display:none!important}#top{position:fixed;top:24px;left:28px;right:28px;display:flex;justify-content:space-between;z-index:10;pointer-events:none}#top span{background:#17130dcc;padding:10px 18px;border-radius:24px;font-size:13px;letter-spacing:2px}#hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:12;background:#17130de6;padding:16px 24px;border-radius:30px;text-align:center;max-width:90vw}#preview{position:fixed;right:24px;bottom:24px;width:150px;border-radius:12px;transform:scaleX(-1);z-index:11;opacity:.7}#welcome{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at 50% 80%,#594532,#14120f 70%);display:grid;place-items:center}.intro{max-width:700px;padding:32px;text-align:center}.intro h1{font:normal clamp(36px,6vw,68px) serif;letter-spacing:8px}.intro p{line-height:1.9;color:#cebfaa}.eyebrow{font-size:12px;letter-spacing:5px;color:#b9a17d}.object{position:absolute;width:clamp(80px,13vw,210px);height:clamp(80px,18vh,200px);transform:translate(-50%,-50%);cursor:grab;touch-action:none;z-index:4;filter:drop-shadow(0 10px 15px #0005)}.object img{width:100%;height:100%;object-fit:contain;pointer-events:none}.object.read{filter:drop-shadow(0 0 12px #ffe8a8)}#box{position:absolute;left:50%;top:58%;width:28vw;height:40vh;transform:translate(-50%,-50%);object-fit:contain}#cursor{position:absolute;width:36px;height:36px;border:2px solid #ffdf9f;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:15;display:none}#cursor.pinch{background:#ffdf9f99;scale:.8}#story{position:absolute;left:50%;top:28%;transform:translateX(-50%);width:min(480px,50vw);background:#f9f1e6ed;color:#463a2c;border-radius:12px;padding:24px;text-align:center;z-index:6;pointer-events:none}#story h2{font:26px serif}#story p{line-height:1.8}#continue{position:fixed;bottom:105px;left:50%;transform:translateX(-50%);z-index:12}#resume{position:fixed;inset:40% 30%;z-index:18}#error{color:#ffd1af;line-height:1.6;white-space:pre-line}.puff{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#e7caaa99,transparent 70%);pointer-events:none;z-index:8;animation:smoke 2s forwards}@keyframes smoke{to{transform:translate(var(--dx),-220px) scale(3);opacity:0}}[hidden]{display:none!important}details{margin:24px auto;font-size:13px;color:#cbbba5}label{display:block;margin:10px}input{max-width:240px}#end{position:absolute;inset:0;display:grid;place-content:center;text-align:center;background:#17130e}#end h1{font:48px serif}@media(max-width:600px){#preview{width:90px;bottom:110px}#story{width:62vw;padding:12px;font-size:13px}#top{left:12px;right:12px}#hint{font-size:13px;width:90%}}
+#emotion-panel{position:fixed;left:20px;top:80px;z-index:16;width:200px;background:#17130ddd;border:1px solid #ae957655;border-radius:12px;padding:14px;font-size:12px;line-height:1.8}#emotion-values{white-space:pre-line}#emotion-timeline{max-height:70px;overflow:auto;letter-spacing:4px}#emotion-panel button{font-size:12px;padding:7px 12px;margin-top:8px}
+#cursor{width:92px;height:92px;border:0;border-radius:0;background:none!important;scale:1!important;font-size:70px;line-height:92px;text-align:center;filter:drop-shadow(0 3px 2px #000) drop-shadow(0 0 16px #ffe3a0);transition:font-size .12s;}
+#cursor.pinch{font-size:78px;filter:drop-shadow(0 3px 2px #000) drop-shadow(0 0 22px #ffad4f)}
+#gesture-guide{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:14px 24px 8px;border:1px solid #ffdfa066;border-radius:24px;background:#21190ddd;box-shadow:0 8px 36px #0005;z-index:12;pointer-events:none;white-space:nowrap;text-align:center}
+#gesture-guide span{display:inline-block;font-size:42px;margin:0 10px;animation:gesture-demo 4s infinite}
+#gesture-guide span:nth-of-type(2){animation-delay:1s}#gesture-guide span:nth-of-type(3){animation-delay:2s}#gesture-guide span:nth-of-type(4){animation-delay:3s}
+#gesture-guide b{color:#e8c78c;font-size:24px;font-weight:400}#burn-progress{font-size:16px;letter-spacing:12px;color:#ffcf88;margin-top:4px}
+#box.drop-ready{filter:drop-shadow(0 0 24px #ffb85c);outline:3px solid #ffcf88;outline-offset:-25px;border-radius:30%}
+@keyframes gesture-demo{0%,22%{transform:translateY(-7px) scale(1.15);opacity:1}25%,100%{transform:none;opacity:.45}}
+@media(prefers-reduced-motion:reduce){#gesture-guide span{animation:none}}
+@media(max-width:600px){#gesture-guide span{font-size:30px;margin:0 5px}#cursor{font-size:58px}#gesture-guide{bottom:18px;padding:10px 15px}}
+
+#smoke-layers{position:fixed;inset:0;z-index:8;pointer-events:none}#smoke-layers img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 2s ease}#smoke-layers img.revealed{opacity:1}#blackout{position:fixed;inset:0;background:#000;opacity:0;z-index:100;pointer-events:none;transition:opacity 3s ease}#blackout.active{opacity:1;pointer-events:auto}
+
+#cursor{visibility:visible!important}
+.object.hand-hover{filter:none}.object.hand-hover img{filter:drop-shadow(2px 0 0 #ffe45c) drop-shadow(-2px 0 0 #ffe45c) drop-shadow(0 2px 0 #ffe45c) drop-shadow(0 -2px 0 #ffe45c) drop-shadow(0 0 10px #ffd42a) drop-shadow(0 0 22px #ffca19);transition:filter .18s ease}
+#scene-line{position:absolute;top:11%;left:50%;transform:translateX(-50%);width:min(780px,80vw);margin:0;text-align:center;font:clamp(18px,2vw,28px)/1.7 Georgia,serif;color:#fff1d6;text-shadow:0 2px 12px #000,0 0 24px #000;z-index:9;pointer-events:none;opacity:1;transition:opacity 1.5s ease}#scene-line.fade{opacity:0}
+
+body.immersive #top,body.immersive #emotion-panel,body.immersive #hint,body.immersive #continue{display:none!important}
+
+/* Keep camera decoding active without displaying a camera preview. */
+#preview{display:block!important;position:fixed!important;left:-4px!important;top:0!important;width:2px!important;height:2px!important;opacity:.001!important;pointer-events:none!important}
+
+.object,.object:hover,.object.read,.object.hand-hover{filter:none!important}
+.object img{animation:object-breath 4.8s ease-in-out infinite;transition:filter .45s ease}
+.object:nth-child(2) img{animation-delay:-1.2s}.object:nth-child(3) img{animation-delay:-2.4s}.object:nth-child(4) img{animation-delay:-3.6s}
+@keyframes object-breath{0%,100%{filter:drop-shadow(1px 0 0 #ffe9a344) drop-shadow(-1px 0 0 #ffe9a344) drop-shadow(0 1px 0 #ffe9a344) drop-shadow(0 -1px 0 #ffe9a344) drop-shadow(0 0 3px #ffda6022)}50%{filter:drop-shadow(1px 0 0 #ffe9a380) drop-shadow(-1px 0 0 #ffe9a380) drop-shadow(0 1px 0 #ffe9a380) drop-shadow(0 -1px 0 #ffe9a380) drop-shadow(0 0 6px #ffda6044)}}
+.object.hand-hover img,.object:hover img{animation:none;filter:drop-shadow(1px 0 0 #ffe58abb) drop-shadow(-1px 0 0 #ffe58abb) drop-shadow(0 1px 0 #ffe58abb) drop-shadow(0 -1px 0 #ffe58abb) drop-shadow(0 0 9px #ffd85e88)!important}
+@media(prefers-reduced-motion:reduce){.object img{animation:none;filter:drop-shadow(0 0 4px #ffe29166)}}
+
+/* Visible contour pulse for interactive objects. */
+.object img{animation:interactive-outline 2.6s ease-in-out infinite!important}
+@keyframes interactive-outline{
+ 0%,100%{filter:drop-shadow(1px 0 0 #ffeaa344) drop-shadow(-1px 0 0 #ffeaa344) drop-shadow(0 1px 0 #ffeaa344) drop-shadow(0 -1px 0 #ffeaa344) drop-shadow(0 0 2px #ffda6033)}
+ 50%{filter:drop-shadow(2px 0 0 #ffe68cdd) drop-shadow(-2px 0 0 #ffe68cdd) drop-shadow(0 2px 0 #ffe68cdd) drop-shadow(0 -2px 0 #ffe68cdd) drop-shadow(0 0 10px #ffd447bb) drop-shadow(0 0 18px #ffd44755)}
+}
+.object.hand-hover img,.object:hover img{animation:none!important;filter:drop-shadow(2px 0 0 #ffe777) drop-shadow(-2px 0 0 #ffe777) drop-shadow(0 2px 0 #ffe777) drop-shadow(0 -2px 0 #ffe777) drop-shadow(0 0 12px #ffd447dd) drop-shadow(0 0 22px #ffd44777)!important}
+@media(prefers-reduced-motion:reduce){.object img{animation:none!important;filter:drop-shadow(0 0 8px #ffe29199)}}
+
+*{box-sizing:border-box}body{margin:0;background:#11100e;color:#f6eddf;font:16px system-ui}button{cursor:pointer;border:1px solid #c3ac87;background:#29251ff0;color:#fff4e0;border-radius:30px;padding:12px 24px;font:inherit}button:disabled{opacity:.4;cursor:default}button:hover:enabled{background:#67543d}#stage{position:fixed;inset:0;background-position:center;background-size:cover;overflow:hidden}#film{width:100%;height:100%;object-fit:cover;background:#000}#film::-webkit-media-controls{display:none!important}#top{position:fixed;top:24px;left:28px;right:28px;display:flex;justify-content:space-between;z-index:10;pointer-events:none}#top span{background:#17130dcc;padding:10px 18px;border-radius:24px;font-size:13px;letter-spacing:2px}#hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:12;background:#17130de6;padding:16px 24px;border-radius:30px;text-align:center;max-width:90vw}#preview{position:fixed;right:24px;bottom:24px;width:150px;border-radius:12px;transform:scaleX(-1);z-index:11;opacity:.7}#welcome{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at 50% 80%,#594532,#14120f 70%);display:grid;place-items:center}.intro{max-width:700px;padding:32px;text-align:center}.intro h1{font:normal clamp(36px,6vw,68px) serif;letter-spacing:8px}.intro p{line-height:1.9;color:#cebfaa}.eyebrow{font-size:12px;letter-spacing:5px;color:#b9a17d}.object{position:absolute;width:clamp(80px,13vw,210px);height:clamp(80px,18vh,200px);transform:translate(-50%,-50%);cursor:grab;touch-action:none;z-index:4;filter:drop-shadow(0 10px 15px #0005)}.object img{width:100%;height:100%;object-fit:contain;pointer-events:none}.object.read{filter:drop-shadow(0 0 12px #ffe8a8)}#box{position:absolute;left:50%;top:58%;width:28vw;height:40vh;transform:translate(-50%,-50%);object-fit:contain}#cursor{position:absolute;width:36px;height:36px;border:2px solid #ffdf9f;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:15;display:none}#cursor.pinch{background:#ffdf9f99;scale:.8}#story{position:absolute;left:50%;top:28%;transform:translateX(-50%);width:min(480px,50vw);background:#f9f1e6ed;color:#463a2c;border-radius:12px;padding:24px;text-align:center;z-index:6;pointer-events:none}#story h2{font:26px serif}#story p{line-height:1.8}#continue{position:fixed;bottom:105px;left:50%;transform:translateX(-50%);z-index:12}#resume{position:fixed;inset:40% 30%;z-index:18}#error{color:#ffd1af;line-height:1.6;white-space:pre-line}.puff{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#e7caaa99,transparent 70%);pointer-events:none;z-index:8;animation:smoke 2s forwards}@keyframes smoke{to{transform:translate(var(--dx),-220px) scale(3);opacity:0}}[hidden]{display:none!important}details{margin:24px auto;font-size:13px;color:#cbbba5}label{display:block;margin:10px}input{max-width:240px}#end{position:absolute;inset:0;display:grid;place-content:center;text-align:center;background:#17130e}#end h1{font:48px serif}@media(max-width:600px){#preview{width:90px;bottom:110px}#story{width:62vw;padding:12px;font-size:13px}#top{left:12px;right:12px}#hint{font-size:13px;width:90%}}
+#emotion-panel{position:fixed;left:20px;top:80px;z-index:16;width:200px;background:#17130ddd;border:1px solid #ae957655;border-radius:12px;padding:14px;font-size:12px;line-height:1.8}#emotion-values{white-space:pre-line}#emotion-timeline{max-height:70px;overflow:auto;letter-spacing:4px}#emotion-panel button{font-size:12px;padding:7px 12px;margin-top:8px}
+body.immersive #top,body.immersive #emotion-panel,body.immersive #hint,body.immersive #continue{display:none!important}
+#preview{display:block!important;position:fixed!important;left:-4px!important;top:0!important;width:2px!important;height:2px!important;opacity:.001!important;pointer-events:none!important}
+#background-sequence{position:fixed;inset:0;pointer-events:none;z-index:0}#background-sequence img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 2s ease}#background-sequence img.shown{opacity:1}
+#cursor{border:0;background:none!important;width:80px;height:80px;font-size:62px;line-height:80px;text-align:center;filter:drop-shadow(0 2px 3px #0008);scale:1!important}
+#blackout{position:fixed;inset:0;z-index:100;background:#000;opacity:0;transition:opacity 3s ease;pointer-events:none}#blackout.active{opacity:1;pointer-events:auto}
+#scene-line{position:absolute;top:9%;left:50%;transform:translateX(-50%);width:min(780px,85vw);text-align:center;color:#fff4da;font:clamp(18px,2vw,28px)/1.7 Georgia,serif;text-shadow:0 2px 12px #000;z-index:7;pointer-events:none;transition:opacity 1.5s}#scene-line.fade{opacity:0}
+#story{top:44%;padding:20px;max-height:40vh;overflow:auto}#box{top:65%;width:22vw;height:28vh}.object{transition:filter .2s}.object:hover{filter:drop-shadow(0 0 14px #ffe18b)}
+
+.object,.object:hover,.object.read,.object.hand-hover{filter:none!important}
+.object img{animation:object-breath 4.8s ease-in-out infinite;transition:filter .45s ease}
+.object:nth-child(2) img{animation-delay:-1.2s}.object:nth-child(3) img{animation-delay:-2.4s}.object:nth-child(4) img{animation-delay:-3.6s}
+@keyframes object-breath{0%,100%{filter:drop-shadow(1px 0 0 #ffe9a344) drop-shadow(-1px 0 0 #ffe9a344) drop-shadow(0 1px 0 #ffe9a344) drop-shadow(0 -1px 0 #ffe9a344) drop-shadow(0 0 3px #ffda6022)}50%{filter:drop-shadow(1px 0 0 #ffe9a380) drop-shadow(-1px 0 0 #ffe9a380) drop-shadow(0 1px 0 #ffe9a380) drop-shadow(0 -1px 0 #ffe9a380) drop-shadow(0 0 6px #ffda6044)}}
+.object.hand-hover img,.object:hover img{animation:none;filter:drop-shadow(1px 0 0 #ffe58abb) drop-shadow(-1px 0 0 #ffe58abb) drop-shadow(0 1px 0 #ffe58abb) drop-shadow(0 -1px 0 #ffe58abb) drop-shadow(0 0 9px #ffd85e88)!important}
+@media(prefers-reduced-motion:reduce){.object img{animation:none;filter:drop-shadow(0 0 4px #ffe29166)}}
+
+#story{top:49%;left:50%;transform:translate(-50%,-50%) rotate(-.7deg);width:min(740px,62vw);max-height:64vh;display:grid;grid-template-columns:38% 1fr;gap:24px;padding:32px 34px;text-align:left;border:1px solid #ae865380;border-radius:2px 7px 3px 5px;color:#503a29;background:radial-gradient(ellipse at 20% 15%,#f2d5a166,transparent 60%),repeating-linear-gradient(1deg,#603f2210 0px,#603f2210 1px,transparent 1px,transparent 4px),linear-gradient(110deg,#c9a374,#e4c394 38%,#d8b381);box-shadow:0 14px 50px #20100666,inset 0 0 38px #84502530;overflow:auto;isolation:isolate}
+#story:before{content:'';position:absolute;left:38%;top:0;bottom:0;width:1px;background:#79512822;box-shadow:1px 0 10px #fff2cf55;pointer-events:none}
+#story-object{width:100%;height:230px;align-self:center;object-fit:contain;filter:drop-shadow(0 8px 9px #5e3b2344);transform:rotate(-5deg)}
+#story-copy{align-self:center;position:relative}#story h2{margin:0 0 18px;font:normal 28px/1.25 'Bradley Hand','Segoe Print','Comic Sans MS',cursive;letter-spacing:.3px;color:#5b3b24}#story p{margin:0;font:19px/1.8 'Bradley Hand','Segoe Print','Comic Sans MS',cursive;color:#59432f}#story-copy:after{content:'RememberMe';display:block;margin-top:20px;font:italic 15px Georgia,serif;color:#80603d;text-align:right}
+@media(max-width:700px){#story{width:78vw;grid-template-columns:30% 1fr;gap:16px;padding:22px 18px}#story-object{height:150px}#story h2{font-size:21px}#story p{font-size:16px;line-height:1.6}}
+
+/* Visible contour pulse for interactive objects. */
+.object img{animation:interactive-outline 2.6s ease-in-out infinite!important}
+@keyframes interactive-outline{
+ 0%,100%{filter:drop-shadow(1px 0 0 #ffeaa344) drop-shadow(-1px 0 0 #ffeaa344) drop-shadow(0 1px 0 #ffeaa344) drop-shadow(0 -1px 0 #ffeaa344) drop-shadow(0 0 2px #ffda6033)}
+ 50%{filter:drop-shadow(2px 0 0 #ffe68cdd) drop-shadow(-2px 0 0 #ffe68cdd) drop-shadow(0 2px 0 #ffe68cdd) drop-shadow(0 -2px 0 #ffe68cdd) drop-shadow(0 0 10px #ffd447bb) drop-shadow(0 0 18px #ffd44755)}
+}
+.object.hand-hover img,.object:hover img{animation:none!important;filter:drop-shadow(2px 0 0 #ffe777) drop-shadow(-2px 0 0 #ffe777) drop-shadow(0 2px 0 #ffe777) drop-shadow(0 -2px 0 #ffe777) drop-shadow(0 0 12px #ffd447dd) drop-shadow(0 0 22px #ffd44777)!important}
+@media(prefers-reduced-motion:reduce){.object img{animation:none!important;filter:drop-shadow(0 0 8px #ffe29199)}}
+
+body[data-scene="a"] #background-sequence{display:none}body[data-scene="a"] #box{top:58%;width:28vw;height:40vh}body[data-scene="a"] #cursor{font-size:70px}#report{position:fixed;inset:0;background:#000a;z-index:200;display:grid;place-items:center}#report-card{width:min(760px,90vw);max-height:85vh;overflow:auto;padding:32px;border:1px solid #a98d62;border-radius:18px;background:#211c16;color:#f2e5d2}#report h2{font:32px Georgia,serif}#report-timeline{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.record-chip{padding:7px 10px;background:#ffffff0a;border-radius:8px;font-size:12px}#report-average{line-height:2;white-space:pre-line}
+
+.offering-puff{position:fixed;border-radius:50%;background:radial-gradient(circle,#d9c6a999 0%,#b8ac9955 36%,transparent 72%);pointer-events:none;z-index:10;opacity:0;animation:offering-smoke 2.15s ease-out forwards;filter:blur(3px)}
+@keyframes offering-smoke{0%{opacity:0;transform:translate(-50%,-30%) scale(.35)}15%{opacity:.8}100%{opacity:0;transform:translate(calc(-50% + var(--drift)),-240px) scale(2.8)}}
+
+/* Keep the memorial above the changing landscape, below objects and story. */
+body[data-scene="b"] #box{z-index:2;display:block;visibility:visible;opacity:1;left:50%;top:auto;bottom:12%;width:clamp(180px,22vw,310px);height:30vh;transform:translateX(-50%);filter:drop-shadow(0 12px 20px #0004)}
+</style>
+
+<style>
+body[data-scene="a"] #box{left:51.1%;top:79%;width:51.2vw;height:110vh;z-index:2;object-fit:fill}
+body[data-scene="a"] .object[data-id="0"]{width:48vw;height:56vh;z-index:4}
+body[data-scene="a"] .object[data-id="1"]{width:48vw;height:68vh;z-index:1}
+body[data-scene="a"] .object[data-id="2"]{width:43vw;height:68vh;z-index:3}
+body[data-scene="a"] .object[data-id="3"]{width:39vw;height:62vh;z-index:5}
+body[data-scene="a"] .object img{object-fit:fill}
+body[data-scene="a"] .object{filter:none}
+body[data-scene="a"] .object:hover{filter:drop-shadow(0 0 14px #ffe18b)}
+</style>
+<div id="stage"><video id="film" playsinline disablepictureinpicture disableremoteplayback controlslist="nodownload nofullscreen noremoteplayback" hidden></video><div id="interaction" hidden><p id="scene-line" hidden></p><img id="box" alt=""><div id="objects"></div><article id="story" hidden><img id="story-object" alt=""><div id="story-copy"><h2 id="title"></h2><p id="desc"></p></div></article><div id="background-sequence"><img id="bg-1" src="b背景.png" alt=""><img id="bg-2" src="b背景2.png" alt=""><img id="bg-3" src="b背景3.png" alt=""><img id="bg-4" src="b背景4.png" alt=""></div><div id="smoke-layers" aria-hidden="true"><img id="smoke-layer-1" src="smoke1.png" alt=""><img id="smoke-layer-2" src="smoke2.png" alt=""><img id="smoke-layer-3" src="smoke3.png" alt=""><img id="smoke-layer-4" src="smoke4.png" alt=""></div><div id="blackout" aria-hidden="true"></div><div id="cursor" aria-label="Open hand">🖐️</div></div><div id="end" hidden><p class="eyebrow">THE END</p><h1>Memories remain. Life continues.</h1><button id="restart">Begin again</button></div></div>
+<div id="top"><span>RememberMe</span><span id="chapter">Ready to begin</span></div><video id="preview" autoplay muted playsinline hidden></video><div id="hint" hidden></div><button id="continue" hidden>Continue</button><button id="resume" hidden>Click to play</button>
+<aside id="emotion-panel" hidden><div id="emotion-status">Expression tracking is preparing</div><p id="tracking-warning" role="status"></p><button id="retry-tracking" hidden>Retry tracking</button><div id="emotion-values"></div><div id="emotion-timeline"></div><button id="export-emotions">Download CSV</button></aside><section id="report" role="dialog" aria-modal="true" aria-labelledby="report-title" hidden><div id="report-card"><h2 id="report-title">Your Expression Record</h2><p id="report-summary"></p><div id="report-average"></div><div id="report-timeline"></div><audio id="report-music" hidden preload="auto" src="./assets/Bill%20Evans%20-%20Someday%20My%20Prince%20Will%20Come.mp3"></audio><button id="report-download">Download CSV</button> <button id="report-close">Close</button></div></section><section id="welcome"><div class="intro"><div class="eyebrow">MEMORY · FAREWELL</div><h1>RememberMe</h1><p>Watch, reach out, let go, and rediscover the memories within objects.<br>Allow camera access, then place your hand in view. Camera images are processed on your device.<br>Pinch your thumb and index finger to pick up an object. Release it over the incinerator.</p><button id="start">Enable camera & begin</button><p id="error" role="status"></p><details><summary>Replace videos (optional)</summary><div id="files"></div></details></div></section>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js"></script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), stage=$('stage'), film=$('film'), preview=$('preview');
+const ASSET_ROOT=new URL('./assets/',location.href).href;
+const asset=path=>new URL(path,ASSET_ROOT).href;
+const sources=['video-a.mp4','video-b.mp4'].map(p=>new URL(p,location.href).href), originalSources=[...sources];
+let phase=-1,tracker=null,stream=null,active=false,lastTime=-1,held=null,pinched=false,hover=null,hoverAt=0,readTimer=0,pointerId=null;
+let burnCount=0,ending=false;
+let sceneBReadyAt=0,sceneBLastTouch=0;const sceneBTouched=new Set();
+let gripCandidate=null,gripSince=0,gripTarget=null,handSeenAt=0,sceneAReadyAt=0;
+// Scale-independent curl measurement, including half fists and curved open grasps.
+function graspDetected(lm,wasClosed,width,height){
+ const point=i=>[lm[i].x*width,lm[i].y*height,(lm[i].z||0)*width];
+ const distance=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));
+ const palm=Math.max(1,distance(point(0),point(9)));
+ const pinch=distance(point(4),point(8))/palm;
+ let curled=0;
+ for(const [m,p,t] of [[5,6,8],[9,10,12],[13,14,16],[17,18,20]]){
+  const a=point(m),b=point(p),c=point(t);
+  const u=a.map((v,i)=>v-b[i]),v=c.map((n,i)=>n-b[i]);
+  const cosine=u.reduce((sum,n,i)=>sum+n*v[i],0)/Math.max(.001,Math.hypot(...u)*Math.hypot(...v));
+  if(cosine>(wasClosed?-.91:-.82)||distance(c,point(0))<distance(b,point(0))*(wasClosed?1.13:1.02))curled++;
+ }
+ return pinch<(wasClosed?.52:.38)||curled>=3;
+}
+const burnt=new Set(),read=new Set(),timers=new Set();
+const folders=['burn','read'];
+const stories=[["His Favorite Sunflowers", "Sunflowers, his favorite blooms, grow beside the headstone. Little butterflies linger among the petals, bringing a gentle sense of life to this quiet place."], ["A Life in Jazz", "A photograph of him in his younger days rests above his epitaph: “The Lick,” a familiar jazz phrase written in musical notes. Even here, his love of jazz plays on."], ["Letters from Home", "Small daisies lie beside an envelope filled with handwritten letters from his family and old photographs. Familiar words and faces keep their shared memories close."], ["A Visit in the Rain", "A large umbrella shelters a picnic basket filled with his favorite peaches. In the light rain, these thoughtful gifts suggest that someone has come to spend a little time with him."]];
+const positions=[[20,25],[80,25],[20,75],[80,75]];
+const sceneAPositions=[[25.5,20],[80,23],[18,82],[85,84]];
+const homePositions=()=>document.body.dataset.scene==='a'?sceneAPositions:positions;
+function later(fn,ms){const id=setTimeout(()=>{timers.delete(id);fn()},ms);timers.add(id)}
+function clearTimers(){timers.forEach(clearTimeout);timers.clear();clearTimeout(readTimer)}
+function hint(text){$('hint').hidden=true}
+function setPhase(n){clearTimers();if(n!==1)stopSceneAFire();gripCandidate=null;gripTarget=null;gripSince=0;handSeenAt=0;sceneAReadyAt=0;$('scene-a-entry')?.remove();$('scene-b-entry')?.remove();sceneBTouched.clear();sceneBReadyAt=0;phase=n;document.body.classList.toggle('immersive',n!==6);document.body.dataset.scene=n===4?'b':'a';ending=false;held=null;hover=null;pinched=false;pointerId=null;$('cursor').style.display='none';$('story').hidden=true;$('continue').hidden=true;$('resume').hidden=true;film.pause();film.hidden=true;$('interaction').hidden=true;$('end').hidden=true;stage.style.backgroundImage='none';
+ if(n===0||n===2||n===3||n===5){const v=({0:0,2:1,3:2,5:3})[n];$('chapter').textContent=`Film ${v+1} / 2`;film.hidden=false;film.src=sources[v];hint('Watch the film');playFilm();}
+ else if(n===1||n===4){buildInteraction(n===1?0:1)}
+ else if(n===6){finishEmotionRecording();active=false;if(stream)stream.getTracks().forEach(t=>t.stop());preview.hidden=true;$('hint').hidden=true;$('end').hidden=false;$('chapter').textContent='Experience complete'}
+}
+async function playFilm(){try{await film.play();$('resume').hidden=true}catch(e){$('resume').hidden=false;hint('Click to play to start the film')}}
+$('resume').onclick=playFilm;film.onended=()=>{if(phase===0)setPhase(1);else if(phase===2)setPhase(4)};film.onerror=()=>{hint('This video cannot be played. Choose a supported MP4 (H.264) on the welcome screen.');$('resume').hidden=false;$('resume').textContent='Retry playback';};
+function buildInteraction(mode){if(mode===0){stopAmbience();startSceneAFire();sceneAReadyAt=performance.now()+3000;const veil=document.createElement('div');veil.id='scene-a-entry';veil.setAttribute('aria-hidden','true');veil.style.cssText='position:fixed;inset:0;background:#000;z-index:200;pointer-events:auto;opacity:1;transition:opacity 3s ease';stage.append(veil);void veil.offsetWidth;veil.style.opacity='0';later(()=>veil.remove(),3000)}$('scene-line').hidden=true;burnCount=0;ending=false;$('blackout').classList.remove('active');for(let i=1;i<=4;i++)$('smoke-layer-'+i).classList.remove('revealed');stage.style.backgroundImage=`url("${new URL('./a背景.png',location.href).href}")`;$('interaction').hidden=false;$('chapter').textContent=mode===0?'Interaction 01 · Letting go':'Interaction 02 · Rediscovering memories';$('box').src=asset(`${folders[mode]}/${mode===0?'box':'tombstone'}.png`);$('box').alt=mode===0?'Incinerator':'Memorial';$('objects').replaceChildren();(mode===0?burnt:read).clear();(mode===0?sceneAPositions:positions).forEach(([x,y],i)=>{const el=document.createElement('div');el.className='object';el.dataset.id=i;el.style.left=x+'%';el.style.top=y+'%';if(mode===1){
+// Match the 1920 x 1080 background's centered object-fit: cover transform.
+const [left,top,width,height]=[[228,448,342,434],[653,494,124,180],[585,804,286,135],[1097,449,602,546]][i];
+const unit='max(calc(100vw / 1920), calc(100vh / 1080))';
+el.style.left=`calc(50vw + (${unit}) * ${left+width/2-960})`;
+el.style.top=`calc(50vh + (${unit}) * ${top+height/2-540})`;
+el.style.width=`calc((${unit}) * ${width})`;
+el.style.height=`calc((${unit}) * ${height})`;
+}const img=document.createElement('img');img.src=asset(`${folders[mode]}/item-${i+1}.png`);img.alt=stories[i][0];el.append(img);$('objects').append(el);el.onpointerdown=e=>{if(phase===1&&!ending&&performance.now()>=sceneAReadyAt){e.preventDefault();held=el;pointerId=e.pointerId;el.setPointerCapture(e.pointerId)}};el.onpointerenter=()=>{if(phase===4)focusItem(el)};el.onpointerleave=()=>{if(phase===4)hideStory()};el.onclick=()=>{if(phase===4)focusItem(el)}});if(mode===1){stage.style.backgroundImage='none';startSceneB()}hint(mode===0?'Pinch to pick up → move over the incinerator → release · 0 / 4':'Hold your finger over an object to discover its story · 0 / 4');}
+const HIT_PADDING=70;
+function hit(x,y){
+ return [...document.querySelectorAll('.object')].filter(el=>!el.dataset.burnt).map(el=>{const r=el.getBoundingClientRect();return {el,r,d:Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2)}}).filter(({r})=>x>=r.left-HIT_PADDING&&x<=r.right+HIT_PADDING&&y>=r.top-HIT_PADDING&&y<=r.bottom+HIT_PADDING).sort((a,b)=>a.d-b.d)[0]?.el;
+}
+function highlightItem(target){document.querySelectorAll('.object').forEach(el=>el.classList.toggle('hand-hover',el===target&&!el.dataset.burnt))}
+
+function moveHeld(x,y){if(!held)return;held.style.left=x+'px';held.style.top=y+'px';held.style.zIndex=7}
+function release(){$('box').classList.remove('drop-ready');if(!held)return;const el=held;held=null;const r=el.getBoundingClientRect(),b=$('box').getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;if(x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom)burn(el);else{const p=homePositions()[Number(el.dataset.id)];el.style.left=p[0]+'%';el.style.top=p[1]+'%';el.style.zIndex=''}}
+function burn(el){
+ if(ending||el.dataset.burnt)return;
+ el.dataset.burnt='1';el.classList.remove('hand-hover');burnCount++;const count=burnCount;emitOfferingSmoke();
+ el.style.transition='opacity .7s,transform .7s';el.style.opacity=0;el.style.transform='translate(-50%,-50%) scale(.1) rotate(90deg)';
+ if(count>=6&&count<=9){
+  const current=count-5;pulseSceneAFire(current);
+  // Crossfade smoke layers together using the existing 2-second opacity transition.
+  for(let i=1;i<=4;i++)$('smoke-layer-'+i).classList.toggle('revealed',i===current);
+ }
+ if(count===9){$('cursor').style.display='none';ending=true;held=null;later(()=>{$('blackout').classList.add('active');fadeAudio();later(transitionToB,3100)},2300);return}
+ later(()=>{if(ending)return;const [x,y]=homePositions()[Number(el.dataset.id)];el.style.transition='none';el.style.left=x+'%';el.style.top=y+'%';el.style.transform='translate(-50%,-50%) scale(.85)';el.style.zIndex='';delete el.dataset.burnt;void el.offsetWidth;el.style.transition='opacity .5s,transform .5s';el.style.opacity=1;el.style.transform='translate(-50%,-50%) scale(1)'},850);
+}
+
+function hideStory(){clearTimeout(readTimer);$('story').hidden=true;hover=null}
+function focusItem(el){if(ending||phase!==4||performance.now()<sceneBReadyAt)return;sceneBTouched.add(el.dataset.id);sceneBLastTouch=performance.now();if(hover===el)return;clearTimeout(readTimer);hover=el;const id=Number(el.dataset.id);$('story-object').src=el.querySelector('img').src;$('story-object').alt=stories[id][0];$('title').textContent=stories[id][0];$('desc').textContent=stories[id][1];$('story').hidden=false;readTimer=setTimeout(()=>{if(phase!==4||hover!==el)return;read.add(String(id));el.classList.add('read');hint(`Stories read ${read.size} / 4 · Keep exploring`);},2000)}
+$('continue').onclick=()=>{if(phase===4&&read.size===4)setPhase(5)};
+window.addEventListener('pointermove',e=>{if(pointerId===e.pointerId)moveHeld(e.clientX,e.clientY)});window.addEventListener('pointerup',e=>{if(pointerId===e.pointerId){release();pointerId=null}});window.addEventListener('pointercancel',()=>{release();pointerId=null});
+function onHands(results){if(ending)return;if(phase!==1&&phase!==4)return;const now=performance.now();if((phase===1&&now<sceneAReadyAt)||(phase===4&&now<sceneBReadyAt))return;const lm=results.multiHandLandmarks?.[0];if(!lm){if(phase===1&&held&&now-handSeenAt<300)return;gripCandidate=null;gripTarget=null;highlightItem(null);$('cursor').style.display='none';if(held&&pointerId===null)release();pinched=false;if(phase===4)hideStory();return}handSeenAt=now;const x=(1-lm[8].x)*stage.clientWidth,y=lm[8].y*stage.clientHeight,c=$('cursor');c.style.display='block';c.style.left=x+'px';c.style.top=y+'px';const dist=(a,b)=>Math.hypot((a.x-b.x)*preview.videoWidth,(a.y-b.y)*preview.videoHeight);const ratio=dist(lm[4],lm[8])/Math.max(1,dist(lm[0],lm[9]));let closed=ratio<(pinched?.48:.32);if(phase===1){const candidate=graspDetected(lm,pinched,preview.videoWidth||640,preview.videoHeight||480);const target=candidate&&!pinched?hit(x,y):null;if(candidate!==gripCandidate||target!==gripTarget){gripCandidate=candidate;gripTarget=target;gripSince=now}closed=pinched;if(candidate!==pinched&&now-gripSince>=(candidate?100:160))closed=candidate;}highlightItem(held||hit(x,y));c.classList.toggle('pinch',closed);c.textContent=phase===4?'🔍':closed?'✊':'🖐️';c.setAttribute('aria-label',closed?'Grabbing hand':'Open hand');if(phase===1&&pointerId===null){if(closed&&!pinched)held=hit(x,y)||null;if(closed)moveHeld(x,y);if(!closed&&pinched)release()}else if(phase===4){const target=hit(x,y);if(target){sceneBLastTouch=now;if(hover!==target){if(target.dataset.id!==c.dataset.target){c.dataset.target=target.dataset.id;hoverAt=performance.now()}if(performance.now()-hoverAt>250)focusItem(target)}}else{delete c.dataset.target;hideStory()}}pinched=closed;}
+let lastTrackingAt=0;
+async function loop(){
+ if(!active)return;
+ const now=performance.now();
+ if(preview.readyState>=2&&now-lastTrackingAt>=45){
+  lastTrackingAt=now;
+  if(preview.paused){try{await preview.play()}catch(e){console.warn('Camera playback paused',e)}}
+  // Expression detection runs independently of hand inference.
+  if(tracker){try{await tracker.send({image:preview})}catch(e){console.warn('Hand tracking error',e)}}
+ }
+ if(active)requestAnimationFrame(loop);
+}
+
+function explainCameraError(e){
+ const messages={NotAllowedError:'Camera access was denied. Allow Camera in this browser’s site settings, then retry. If using the in-app browser, open this page in Chrome or Safari.',NotFoundError:'No camera was found. Connect a camera, then retry.',NotReadableError:'The camera is unavailable. Close other apps using it, then retry.',OverconstrainedError:'The selected camera settings are unavailable. Retry with another camera.',SecurityError:'Camera access is blocked. Open this page over HTTPS or localhost.'};
+ return messages[e.name]||e.message||'Camera access failed.';
+}
+async function requestCamera(){
+ if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw new Error('Camera access requires HTTPS or localhost. Open the published RememberMe website in Chrome or Safari.');
+ if(stream)stream.getTracks().forEach(t=>t.stop());
+ try{return await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false})}
+ catch(e){if(e.name==='OverconstrainedError')return navigator.mediaDevices.getUserMedia({video:true,audio:false});throw e}
+}
+$('start').onclick=async()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen){document.documentElement.requestFullscreen().catch(()=>{});}prepareAudio();unlockSceneAFire();unlockForestAudio();
+ const btn=$('start');btn.disabled=true;$('error').textContent='Requesting camera access…';
+ try{stream=await requestCamera();preview.srcObject=stream;await preview.play();preview.hidden=false}
+ catch(e){$('error').textContent=explainCameraError(e);btn.textContent='Retry camera access';btn.disabled=false;return}
+ $('error').textContent='Camera connected. Loading hand and expression tracking…';
+ const warnings=[];
+ try{if(!window.Hands)throw Error('Hand library unavailable');if(tracker)await tracker.close();tracker=new Hands({locateFile:file=>'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/'+file});tracker.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.55,minTrackingConfidence:.5});tracker.onResults(onHands);await tracker.initialize()}
+ catch(e){tracker=null;$('error').textContent='Hand tracking could not start. Check your connection and retry. '+e.message;btn.textContent='Retry hand tracking';btn.disabled=false;return}
+ try{await initFace()}catch(e){faceModel=null;$('error').textContent='Expression tracking could not start. Check vendor files and serve this folder through localhost or HTTPS. '+e.message;btn.textContent='Retry expression tracking';btn.disabled=false;return}
+ active=true;lastTime=-1;$('welcome').hidden=true;setPhase(0);startEmotionRecording();faceLoop();loop();
+ $('tracking-warning').textContent=warnings.join(' ');$('retry-tracking').hidden=!warnings.length;btn.disabled=false;
+};
+$('retry-tracking').onclick=async()=>{const btn=$('retry-tracking');btn.disabled=true;try{if(!stream||stream.getVideoTracks().every(t=>t.readyState==='ended')){stream=await requestCamera();preview.srcObject=stream;await preview.play()}await initFace();if(!tracker&&window.Hands){tracker=new Hands({locateFile:file=>'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/'+file});tracker.setOptions({maxNumHands:1,modelComplexity:1});tracker.onResults(onHands);await tracker.initialize()}$('tracking-warning').textContent=tracker?'Tracking reconnected.':'Expressions connected. Hand tracking unavailable; use mouse or touch.';btn.hidden=!!tracker}catch(e){$('tracking-warning').textContent=explainCameraError(e)}finally{btn.disabled=false}};
+$('restart').onclick=()=>{$('end').hidden=true;$('welcome').hidden=false;$('error').textContent='';$('chapter').textContent='Ready to begin'};
+for(let i=0;i<2;i++){const label=document.createElement('label');label.textContent=`Film ${i+1} `;const input=document.createElement('input');input.type='file';input.accept='video/*';input.onchange=()=>{if(!input.files[0])return;if(sources[i]!==originalSources[i])URL.revokeObjectURL(sources[i]);sources[i]=URL.createObjectURL(input.files[0])};label.append(input);$('files').append(label)}
+    function calculateEmotions(blendshapes, landmarks) {
+      const getScore = (name) => {
+        const item = blendshapes.find(b => b.categoryName === name);
+        return Number.isFinite(item?.score) ? Math.max(0,Math.min(1,item.score)) : 0;
+      };
+      
+      const smile = (getScore('mouthSmileLeft') + getScore('mouthSmileRight')) / 2;
+      const cheek = (getScore('cheekSquintLeft') + getScore('cheekSquintRight')) / 2;
+      const jawOpen = getScore('jawOpen');
+      const browInnerUp = getScore('browInnerUp'); 
+      const browOuterUp = (getScore('browOuterUpLeft') + getScore('browOuterUpRight')) / 2;
+      const lipPress = (getScore('mouthPressLeft') + getScore('mouthPressRight')) / 2;
+      const browAsymmetry = Math.abs(getScore('browOuterUpLeft') - getScore('browOuterUpRight'));
+      const mouthAsymmetry = Math.abs(getScore('mouthSmileLeft') - getScore('mouthSmileRight'));
+      const noseSneer = (getScore('noseSneerLeft') + getScore('noseSneerRight')) / 2; 
+
+      let geometricBrowDown = 0;
+      let geometricEyeNarrow = 0;
+      let geometricLipThin = 0;
+
+      if (landmarks && [159,145,386,374,55,285,13,14,61,291].every(i=>Number.isFinite(landmarks[i]?.x)&&Number.isFinite(landmarks[i]?.y))) {
+        const dist = (p1, p2) => {
+          return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        };
+
+        const leftEyeHeight = dist(landmarks[159], landmarks[145]);
+        const rightEyeHeight = dist(landmarks[386], landmarks[374]);
+        const leftBrowDist = dist(landmarks[159], landmarks[55]);
+        const rightBrowDist = dist(landmarks[386], landmarks[285]);
+        const mouthHeight = dist(landmarks[13], landmarks[14]);
+        const mouthWidth = dist(landmarks[61], landmarks[291]);
+
+        const eyeToBrowRatio = (leftBrowDist + rightBrowDist) / 2;
+        const mouthRatio = mouthHeight / (mouthWidth || 1);
+
+        // 恢复敏感度：只要距离小于 0.042 就算皱眉，快速响应
+        if (eyeToBrowRatio < 0.042) {
+          geometricBrowDown = Math.min(1, (0.042 - eyeToBrowRatio) / 0.015); 
+        }
+
+        // 眼睛眯起
+        if ((leftEyeHeight + rightEyeHeight) / 2 < 0.011) {
+          geometricEyeNarrow = 0.6; 
+        }
+
+        // 嘴唇紧闭
+        if (mouthRatio < 0.07) {
+          geometricLipThin = 0.5;
+        }
+      }
+
+      rawSmileEl.textContent = smile.toFixed(2);
+      rawBrowUpEl.textContent = (browInnerUp + browOuterUp).toFixed(2);
+      rawBrowDownEl.textContent = (getScore('browDownLeft') + geometricBrowDown).toFixed(2);
+
+      // 降低触发门槛，动作稍微做一点就能检测到
+      let happy = 0;
+      if (smile > 0.1) happy = (smile * 0.8) + (cheek * 0.2); // 从 0.2 降到 0.1
+
+      let surprise = 0;
+      if (jawOpen > 0.15 && (browOuterUp > 0.1 || browInnerUp > 0.1)) { // 从 0.25 降到 0.15
+        surprise = (jawOpen * 0.5) + (browOuterUp * 0.25) + (browInnerUp * 0.25);
+      }
+
+      const mediaPipeBrowDown = (getScore('browDownLeft') + getScore('browDownRight')) / 2;
+      let angry = 0;
+      if (mediaPipeBrowDown > 0.05 || geometricBrowDown > 0.15) { // 从 0.1 降到 0.05
+        angry = (mediaPipeBrowDown * 0.4) + (geometricBrowDown * 0.4) + (lipPress * 0.1) + (geometricLipThin * 0.1);
+      }
+      angry = Math.min(1, angry * 1.2); // 增加一点愤怒的权重
+
+      const ramp=(v,d,f)=>Math.pow(Math.max(0,Math.min(1,(v-d)/(f-d))),0.7);
+      const confused=0.8*ramp(Math.max(browInnerUp,browOuterUp),0.015,0.22)+0.2*ramp(browAsymmetry,0.015,0.16);
+      // Neutral 的退让逻辑：只要有任何表情，Neutral 就迅速让位
+      const maxOther = Math.max(happy, surprise, angry, confused);
+      let neutral = 0.6; 
+      
+      if (maxOther > 0.05) {
+        neutral = Math.max(0.05, 1 - (maxOther * 2.5)); // 乘数变大，Neutral 掉得更快
+      }
+
+      const rawScores = { happy, surprise, confused, angry, neutral };
+      
+      let sum = Object.values(rawScores).reduce((a, b) => a + b, 0);
+      if (sum === 0) sum = 1;
+      
+      const finalScores = {};
+      for (const key in rawScores) {
+        finalScores[key] = (rawScores[key] / sum) * 100;
+      }
+      return finalScores;
+    }
+
+
+const rawSmileEl={},rawBrowUpEl={},rawBrowDownEl={};
+let faceModel=null,emotionRows=[],emotionInterval=null,emotionStart=0,lastFaceAt=-Infinity,facePresent=false,faceError=false;
+let smoothed={happy:0,surprise:0,confused:0,angry:0,neutral:100};
+const emojis={happy:'😄',surprise:'😲',confused:'🤔',angry:'😠',neutral:'😐'};
+let faceRealm=null;
+let faceVideoTime=-1,faceTimestamp=-1,faceFrame=0,faceSamples=[],lastFaceError='';
+function faceLoop(){
+ if(!active)return;
+ readFace();
+ faceFrame=requestAnimationFrame(faceLoop);
+}
+async function initFace(){
+ if(faceModel)return;
+ // Hands and Tasks Vision both install Emscripten globals. Give Vision its own realm.
+ if(!faceRealm){
+  faceRealm=document.createElement('iframe');faceRealm.hidden=true;
+  const loaded=new Promise((resolve,reject)=>{faceRealm.onload=resolve;faceRealm.onerror=()=>reject(new Error('Expression runtime could not open'));});
+  faceRealm.src='about:blank';document.body.appendChild(faceRealm);await loaded;
+ }
+ const loadVision=faceRealm.contentWindow.Function('url','return import(url)');
+ const {FaceLandmarker,FilesetResolver}=await loadVision(new URL('./vendor/vision_bundle.mjs',location.href).href);
+ const files=await FilesetResolver.forVisionTasks(new URL('./vendor/wasm',location.href).href);
+ const options={baseOptions:{modelAssetPath:new URL('./vendor/face_landmarker.task',location.href).href,delegate:'GPU'},outputFaceBlendshapes:true,runningMode:'VIDEO',numFaces:1};
+ try{faceModel=await FaceLandmarker.createFromOptions(files,options)}
+ catch(gpuError){options.baseOptions.delegate='CPU';try{faceModel=await FaceLandmarker.createFromOptions(files,options)}catch(cpuError){throw new Error('Expression model initialization failed: '+cpuError.message)}}
+
+}
+function readFace(){
+ const now=performance.now();if(!faceModel){facePresent=false;faceError=true;$('emotion-status').textContent='Expression model unavailable';return}if(preview.readyState<2||!preview.videoWidth||preview.currentTime===faceVideoTime||now-faceTimestamp<100)return;faceVideoTime=preview.currentTime;faceTimestamp=Math.max(now,faceTimestamp+.001);
+ try{const result=faceModel.detectForVideo(preview,faceTimestamp);facePresent=!!result.faceBlendshapes?.length;faceError=false;
+ if(facePresent&&result.faceBlendshapes[0].categories?.length){const scores=calculateEmotions(result.faceBlendshapes[0].categories,result.faceLandmarks?.[0]);for(const k in smoothed)smoothed[k]=.4*smoothed[k]+.6*scores[k];lastFaceAt=now;faceSamples.push({...smoothed});}
+ $('emotion-status').textContent=facePresent?'● Recording expressions':'● Recording · No face detected';
+ $('emotion-values').textContent=facePresent?Object.entries(smoothed).map(([k,v])=>`${emojis[k]} ${k}  ${v.toFixed(0)}%`).join('\n'):'Keep your face in view';
+ }catch(e){facePresent=false;faceError=true;lastFaceError=e.message||String(e);console.warn('Expression detection failed',e);$('emotion-status').textContent='Expression tracking error: '+lastFaceError;}
+}
+function captureEmotion(){
+ if(!emotionInterval)return;
+ const samples=faceSamples.splice(0);const fresh=samples.length>0;const values=fresh?Object.fromEntries(Object.keys(smoothed).map(k=>[k,samples.reduce((sum,r)=>sum+r[k],0)/samples.length])):smoothed;
+ const dominant=fresh?Object.keys(smoothed).reduce((a,b)=>values[a]>values[b]?a:b):'';
+ const row={time:new Date().toISOString(),elapsed:((performance.now()-emotionStart)/1000).toFixed(2),phase:['a_video','a_burn','b_video','transition','b_read','transition','end'][phase]||'start',status:fresh?'face_detected':faceError?'tracking_error':'no_face',emotion:dominant};
+ for(const k in smoothed)row[k]=fresh?values[k].toFixed(2):'';
+ emotionRows.push(row);$('emotion-timeline').textContent=emotionRows.slice(-24).map(r=>emojis[r.emotion]||'·').join(' ');
+}
+function startEmotionRecording(){clearInterval(emotionInterval);emotionRows=[];emotionStart=performance.now();faceSamples=[];faceVideoTime=-1;faceTimestamp=-1;lastFaceError='';cancelAnimationFrame(faceFrame);lastFaceAt=-Infinity;facePresent=false;faceError=!faceModel;smoothed={happy:0,surprise:0,confused:0,angry:0,neutral:100};$('emotion-panel').hidden=false;$('emotion-timeline').textContent='';emotionInterval=setInterval(captureEmotion,5000);}
+function finishEmotionRecording(){if(!emotionInterval)return;captureEmotion();clearInterval(emotionInterval);emotionInterval=null;$('emotion-status').textContent=`Recording complete · ${emotionRows.length} samples`;}
+$('export-emotions').onclick=()=>{if(!emotionRows.length)return;const keys=['time','elapsed','phase','status','emotion','happy','surprise','confused','angry','neutral'];const csv='\uFEFF'+[keys.join(','),...emotionRows.map(row=>keys.map(k=>row[k]).join(','))].join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`emotion-session-${Date.now()}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+
+
+// Local fire soundtrack, independent of the procedural ambience volume.
+const sceneAFire=new Audio(new URL('./assets/火.mp3',location.href).href);
+sceneAFire.loop=true;sceneAFire.preload='auto';
+let sceneAFireAnimation=0;
+const sceneAFireLevels=[.65,.75,.85,.93,1];
+// Use native playback: local file URLs can be silenced by MediaElementAudioSource.
+function rampSceneAFire(target,seconds=0){
+ cancelAnimationFrame(sceneAFireAnimation);
+ const from=sceneAFire.volume,start=performance.now();
+ if(!seconds){sceneAFire.volume=target;return}
+ function frame(now){const t=Math.min(1,(now-start)/(seconds*1000));sceneAFire.volume=from+(target-from)*t;if(t<1)sceneAFireAnimation=requestAnimationFrame(frame)}
+ sceneAFireAnimation=requestAnimationFrame(frame);
+}
+function unlockSceneAFire(){
+ sceneAFire.volume=0;
+ sceneAFire.play().then(()=>{if(phase!==1){sceneAFire.pause();sceneAFire.currentTime=0}}).catch(()=>{});
+}
+function startSceneAFire(){
+ sceneAFire.currentTime=0;sceneAFire.muted=false;setSceneAFireLevel(0,0);
+ sceneAFire.play().catch(e=>console.warn('Fire soundtrack playback unavailable',e));
+}
+function setSceneAFireLevel(level,duration=2){rampSceneAFire(sceneAFireLevels[level],duration)}
+function pulseSceneAFire(level){
+ rampSceneAFire(1,.15);
+ later(()=>{if(phase===1&&!ending)rampSceneAFire(sceneAFireLevels[level],1.3)},1200);
+}
+function stopSceneAFire(){
+ cancelAnimationFrame(sceneAFireAnimation);sceneAFire.pause();sceneAFire.currentTime=0;
+}
+function fadeSceneAFire(){rampSceneAFire(0,3);later(stopSceneAFire,3100)}
+
+// Quiet procedural soundscape. Audio is unlocked by the initial Start click.
+let audioCtx=null,audioMaster=null,fireGain=null,smokeGain=null,ambienceSources=[];
+function prepareAudio(){
+ if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();audioMaster=audioCtx.createGain();audioMaster.gain.value=.24;const limiter=audioCtx.createDynamicsCompressor();limiter.threshold.value=-22;limiter.knee.value=16;limiter.ratio.value=6;audioMaster.connect(limiter);limiter.connect(audioCtx.destination)}
+ audioCtx.resume().catch(()=>{});
+}
+function noiseBuffer(seconds=4){const b=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*seconds),audioCtx.sampleRate);const d=b.getChannelData(0);let brown=0;for(let i=0;i<d.length;i++){brown=(brown+.025*(Math.random()*2-1))/.999; brown=Math.max(-1,Math.min(1,brown));d[i]=brown*.6+(Math.random()*2-1)*.15}return b}
+function noiseVoice(freq,q,gain,loop=true){const src=audioCtx.createBufferSource();src.buffer=noiseBuffer();src.loop=loop;const filter=audioCtx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=freq;filter.Q.value=q;src.connect(filter);filter.connect(gain);src.start();return src}
+function rampGain(node,value,duration){const t=audioCtx.currentTime;node.gain.cancelScheduledValues(t);node.gain.setValueAtTime(node.gain.value,t);node.gain.linearRampToValueAtTime(value,t+duration)}
+function stopAmbience(){for(const source of ambienceSources){try{source.stop();source.disconnect()}catch(e){}}ambienceSources=[];fireGain?.disconnect();smokeGain?.disconnect();fireGain=null;smokeGain=null}
+function startAmbience(){if(!audioCtx)return;stopAmbience();audioMaster.gain.cancelScheduledValues(audioCtx.currentTime);audioMaster.gain.setValueAtTime(.24,audioCtx.currentTime);fireGain=audioCtx.createGain();smokeGain=audioCtx.createGain();fireGain.gain.value=0;smokeGain.gain.value=0;fireGain.connect(audioMaster);smokeGain.connect(audioMaster);ambienceSources=[noiseVoice(420,.55,fireGain),noiseVoice(1450,.7,smokeGain)];rampGain(fireGain,.09,3);rampGain(smokeGain,.015,3)}
+function offeringSound(id){
+ if(!audioCtx||!fireGain)return;
+ const t=audioCtx.currentTime;const voices=[{freq:1800,q:1.2,duration:.65,volume:.13},{freq:580,q:1.8,duration:.95,volume:.16},{freq:2600,q:1,duration:.8,volume:.12},{freq:260,q:2.5,duration:1.15,volume:.18}];const v=voices[id%4];const g=audioCtx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v.volume,t+.09);g.gain.exponentialRampToValueAtTime(.0001,t+v.duration);g.connect(audioMaster);const src=noiseVoice(v.freq,v.q,g,false);src.stop(t+v.duration+.1);src.onended=()=>{src.disconnect();g.disconnect()};
+ rampGain(fireGain,.09+.012*Math.min(burnCount,9),1.8);rampGain(smokeGain,.015+.006*Math.min(burnCount,9),2);
+}
+
+function emitOfferingSmoke(){
+ const boxRect=$('box').getBoundingClientRect();
+ for(let i=0;i<22;i++){
+  const p=document.createElement('div');p.className='offering-puff';
+  const size=35+Math.random()*65;
+  p.style.cssText=`left:${boxRect.left+boxRect.width/2+(Math.random()-.5)*boxRect.width*.22}px;top:${boxRect.top+boxRect.height*.35}px;width:${size}px;height:${size}px;--drift:${(Math.random()-.5)*180}px;animation-delay:${Math.random()*.25}s`;
+  stage.append(p);setTimeout(()=>p.remove(),2600);
+ }
+}
+function fireSurge(){
+ if(!audioCtx||!fireGain)return;
+ const t=audioCtx.currentTime,g=audioCtx.createGain();
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.29,t+.12);g.gain.exponentialRampToValueAtTime(.09,t+.55);g.gain.exponentialRampToValueAtTime(.0001,t+1.65);g.connect(audioMaster);
+ const src=noiseVoice(580,.65,g,false);src.stop(t+1.75);src.onended=()=>{src.disconnect();g.disconnect()};
+}
+
+function fadeAudio(){fadeSceneAFire();if(!audioCtx)return;rampGain(audioMaster,0,3);later(stopAmbience,3100)}
+
+function finishSceneB(){
+ if(phase!==4||ending)return;
+ ending=true;$('blackout').classList.add('active');fadeForest();$('cursor').style.display='none';hideStory();
+ later(()=>{phase=6;finishEmotionRecording();active=false;stream?.getTracks().forEach(t=>t.stop());showReport()},3100);
+}
+function checkSceneBCompletion(){
+ if(phase!==4||ending)return;
+ const now=performance.now();
+ if(hover)sceneBLastTouch=now;
+ if(sceneBTouched.size===4&&!hover&&now-sceneBLastTouch>=5000){finishSceneB();return}
+ later(checkSceneBCompletion,100);
+}
+function startSceneB(){startForest();
+ sceneBTouched.clear();sceneBReadyAt=performance.now()+3000;sceneBLastTouch=sceneBReadyAt;
+ const veil=document.createElement('div');veil.id='scene-b-entry';veil.setAttribute('aria-hidden','true');
+ veil.style.cssText='position:fixed;inset:0;background:#000;z-index:200;pointer-events:auto;opacity:1;transition:opacity 3s ease';
+ stage.append(veil);void veil.offsetWidth;veil.style.opacity='0';later(()=>veil.remove(),3000);
+ for(let i=1;i<=4;i++)$('bg-'+i).classList.toggle('shown',i===1);
+ $('blackout').classList.remove('active');$('scene-line').hidden=true;
+ for(let i=2;i<=4;i++)later(()=>{$('bg-'+i).classList.add('shown')},(i-1)*12000);
+ later(checkSceneBCompletion,3000);
+}
+
+
+// Subtle procedural woodland ambience, independent of video audio.
+let forestAudio=null,forestMaster=null,forestNodes=[],birdTimer=null,forestRunning=false;
+function unlockForestAudio(){if(!forestAudio){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;forestAudio=new AC();forestMaster=forestAudio.createGain();forestMaster.gain.value=0;forestMaster.connect(forestAudio.destination)}forestAudio.resume().catch(()=>{})}
+function stopForest(){forestRunning=false;clearTimeout(birdTimer);for(const n of forestNodes){try{n.stop()}catch(e){}try{n.disconnect()}catch(e){}}forestNodes=[]}
+function forestNoise(frequency,volume,speed){const ctx=forestAudio;const buffer=ctx.createBuffer(1,ctx.sampleRate*8,ctx.sampleRate);const d=buffer.getChannelData(0);let last=0;for(let i=0;i<d.length;i++){last=.96*last+.04*(Math.random()*2-1);d[i]=last*3}const src=ctx.createBufferSource();src.buffer=buffer;src.loop=true;const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=frequency;filter.Q.value=.55;const gain=ctx.createGain();gain.gain.value=volume;const lfo=ctx.createOscillator();lfo.frequency.value=speed;const depth=ctx.createGain();depth.gain.value=volume*.38;lfo.connect(depth);depth.connect(gain.gain);src.connect(filter);filter.connect(gain);gain.connect(forestMaster);src.start();lfo.start();forestNodes.push(src,lfo,filter,gain,depth)}
+function forestBird(){if(!forestRunning)return;const ctx=forestAudio;const t=ctx.currentTime;const base=2100+Math.random()*950;const count=2+Math.floor(Math.random()*2);for(let i=0;i<count;i++){const o=ctx.createOscillator(),g=ctx.createGain();const at=t+i*.24;o.type='sine';o.frequency.setValueAtTime(base*.82,at);o.frequency.exponentialRampToValueAtTime(base*1.22,at+.055);o.frequency.exponentialRampToValueAtTime(base*.92,at+.17);g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(.035,at+.025);g.gain.exponentialRampToValueAtTime(.0001,at+.19);o.connect(g);g.connect(forestMaster);o.start(at);o.stop(at+.21);o.onended=()=>{o.disconnect();g.disconnect()}}birdTimer=setTimeout(forestBird,6500+Math.random()*6500)}
+function startForest(){if(!forestAudio)return;stopForest();forestRunning=true;const t=forestAudio.currentTime;forestMaster.gain.cancelScheduledValues(t);forestMaster.gain.setValueAtTime(0,t);forestMaster.gain.linearRampToValueAtTime(.28,t+3);forestNoise(380,.13,.09);forestNoise(1800,.065,.16);birdTimer=setTimeout(forestBird,2500+Math.random()*3000)}
+function fadeForest(){if(!forestAudio)return;forestRunning=false;clearTimeout(birdTimer);const t=forestAudio.currentTime;forestMaster.gain.cancelScheduledValues(t);forestMaster.gain.setValueAtTime(forestMaster.gain.value,t);forestMaster.gain.linearRampToValueAtTime(0,t+3);later(stopForest,3100)}
+
+
+
+function transitionToB(){
+ stopAmbience();setPhase(2);
+ const reveal=()=>{requestAnimationFrame(()=>$('blackout').classList.remove('active'))};
+ if(film.readyState>=2)reveal();else film.addEventListener('loadeddata',reveal,{once:true});
+}
+// Keep the soundtrack invisible; retry on a report gesture if autoplay is blocked.
+const reportMusic = $('report-music');
+let musicPending=false, musicStarting=false, musicFade=0;
+reportMusic.volume=0;
+async function startReportMusic(){
+ if(musicStarting || !reportMusic.paused)return;
+ musicStarting=true;
+ try{
+  await reportMusic.play(); musicPending=false;
+  cancelAnimationFrame(musicFade);
+  const began=performance.now();
+  function fade(now){
+   const progress=Math.min(1,(now-began)/6000);
+   reportMusic.volume=.55*progress*progress*(3-2*progress);
+   if(progress<1)musicFade=requestAnimationFrame(fade);
+  }
+  musicFade=requestAnimationFrame(fade);
+ }catch(e){musicPending=true}finally{musicStarting=false}
+}
+$('report').addEventListener('pointerdown',()=>{if(musicPending)startReportMusic()});
+$('report').addEventListener('keydown',()=>{if(musicPending)startReportMusic()});
+function celebrateReport(){
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const canvas=document.createElement('canvas');
+ canvas.setAttribute('aria-hidden','true');
+ canvas.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:210';
+ document.body.append(canvas);
+ const ctx=canvas.getContext('2d');if(!ctx){canvas.remove();return}
+ const w=innerWidth,h=innerHeight,dpr=Math.min(devicePixelRatio||1,2);
+ canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);
+ const colors=['#d4af67','#f0d9a0','#fff0ca','#c79d74','#e8d5b7'];
+ const pieces=Array.from({length:110},(_,i)=>({x:i%2?w:0,y:h*.62,vx:(i%2?-1:1)*(100+Math.random()*380),vy:-220-Math.random()*400,r:Math.random()*6.28,spin:(Math.random()-.5)*7,size:4+Math.random()*6,color:colors[i%colors.length]}));
+ const start=performance.now();let previous=start;
+ function frame(now){
+  const elapsed=(now-start)/1000,dt=Math.min(.04,(now-previous)/1000);previous=now;
+  ctx.clearRect(0,0,w,h);ctx.globalAlpha=Math.min(1,Math.max(0,(5-elapsed)/1.5));
+  for(const p of pieces){p.vy+=200*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=p.spin*dt;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);ctx.restore()}
+  if(elapsed<5&&!$('report').hidden)requestAnimationFrame(frame);else canvas.remove();
+ }
+ requestAnimationFrame(frame);
+}
+function showReport(){
+ const valid=emotionRows.filter(r=>r.status==='face_detected');
+ const counts={};valid.forEach(r=>counts[r.emotion]=(counts[r.emotion]||0)+1);
+ const dominant=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+ $('report-summary').textContent=valid.length?`${emojis[dominant]} ${dominant} · ${valid.length} face samples / ${emotionRows.length} total records`:'No valid face samples were recorded. Tracking status is available in the CSV.'+(lastFaceError?' Error: '+lastFaceError:' Check that your face stays in camera view.');
+ $('report-average').textContent=Object.keys(emojis).map(k=>`${emojis[k]} ${k}: ${valid.length?(valid.reduce((n,r)=>n+Number(r[k]),0)/valid.length).toFixed(1):'—'}%`).join('\n');
+ $('report-timeline').replaceChildren();emotionRows.forEach(r=>{const chip=document.createElement('span');chip.className='record-chip';chip.textContent=`${r.elapsed}s · ${r.phase} ${emojis[r.emotion]||'—'}`;$('report-timeline').append(chip)});
+ $('report').hidden=false;
+ startReportMusic();
+ celebrateReport();
+}
+$('report-download').onclick=()=>$('export-emotions').click();
+$('report-close').onclick=()=>{$('report').hidden=true};
+
+window.addEventListener('pagehide',()=>{stopForest();forestAudio?.close();stopAmbience();audioCtx?.close();finishEmotionRecording();active=false;stream?.getTracks().forEach(t=>t.stop())});
+</script></html>
